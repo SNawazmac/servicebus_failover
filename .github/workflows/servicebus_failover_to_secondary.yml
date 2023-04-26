@@ -1,0 +1,40 @@
+name: servicebus_failover_to_secondary
+on:
+  workflow_call:
+    inputs:
+      secondary_servicebus_resource_group_name:
+        required: true
+        type: string
+      servicebus_aliasname:
+        required: true
+        type: string
+      secondary_servicebus_namespace_name:
+        required: true
+        type: string
+      subscriptionId_of_secondary_namespace:
+        required: true
+        type: string
+    secrets:
+      AZURE_CREDENTIALS_DELOITTE_SUB:
+        required: true
+jobs:  
+  servicebus_failover_to_secondary:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest       
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        repository: SNawazmac/servicebus_failover
+    - name: Login via Az module
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS_DELOITTE_SUB}}
+        enable-AzPSSession: true
+    - name: servicebus_failover
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          ./servicebus_failover_to_secondary.ps1 -secondary_servicebus_resource_group_name "${{ inputs.secondary_servicebus_resource_group_name }}" -servicebus_aliasname "${{ inputs.servicebus_aliasname }}" -secondary_servicebus_namespace_name "${{ inputs.secondary_servicebus_namespace_name }}" -subscriptionId_of_secondary_namespace "${{ inputs.subscriptionId_of_secondary_namespace }}"
+        azPSVersion: "latest"
